@@ -12,47 +12,49 @@ jobs:
       NODE_OPTIONS: --max-old-space-size=4096
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 22
 
-      # Run codex-cli/ tasks first because they are higher signal.
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.8.1
+          run_install: false
 
-      - name: Install dependencies (codex-cli)
-        working-directory: codex-cli
-        run: npm ci
-
-      - name: Check formatting (codex-cli)
-        working-directory: codex-cli
-        run: npm run format
-
-      - name: Run tests (codex-cli)
-        working-directory: codex-cli
-        run: npm run test
-
-      - name: Lint (codex-cli)
-        working-directory: codex-cli
+      - name: Get pnpm store directory
+        id: pnpm-cache
+        shell: bash
         run: |
-          npm run lint -- \
-            --rule "no-console:error" \
-            --rule "no-debugger:error" \
-            --max-warnings=-1
+          echo "store_path=$(pnpm store path --silent)" >> $GITHUB_OUTPUT
 
-      - name: Type‑check (codex-cli)
-        working-directory: codex-cli
-        run: npm run typecheck
+      - name: Setup pnpm cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.pnpm-cache.outputs.store_path }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
 
-      - name: Build (codex-cli)
-        working-directory: codex-cli
-        run: npm run build
+      - name: Install dependencies
+        run: pnpm install
 
-      # Run formatting checks in the root directory last.
+      # Run all tasks using workspace filters
 
-      - name: Install dependencies (root)
-        run: npm ci
+      - name: Ensure staging a release works.
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: ./codex-cli/scripts/stage_release.sh
 
-      - name: Check formatting (root)
-        run: npm run format
+      - name: Ensure root README.md contains only ASCII and certain Unicode code points
+        run: ./scripts/asciicheck.py README.md
+      - name: Check root README ToC
+        run: python3 scripts/readme_toc.py README.md
+
+      - name: Ensure codex-cli/README.md contains only ASCII and certain Unicode code points
+        run: ./scripts/asciicheck.py codex-cli/README.md
+      - name: Check codex-cli/README ToC
+        run: python3 scripts/readme_toc.py codex-cli/README.md
