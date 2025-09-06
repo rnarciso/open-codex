@@ -182,7 +182,7 @@ console.log(fib(10));
     assert!(
         contents.contains("<<<<<<< HEAD")
             || contents.contains("=======")
-            || contents.contains(">>>>>>> "),
+            || contents.contains(">>>>>>> origin/main"),
         "fibonacci.js should contain merge conflict markers, got: {contents}",
     );
 }
