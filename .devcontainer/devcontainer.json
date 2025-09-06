@@ -23,5 +23,5 @@
       },
       "extensions": ["rust-lang.rust-analyzer", "tamasfe.even-better-toml"]
     }
-  }
+  }, "features": { "ghcr.io/devcontainers/features/common-utils:2": { "installZsh": "false", "username": "coder", "userUid": "1000", "userGid": "1000" }, "ghcr.io/devcontainers/features/node:1": { "version": "lts", "nodeGypDependencies": true }, "ghcr.io/devcontainers/features/python:1": { "installJupyterlab": false, "version": "3.11" }, "ghcr.io/devcontainers/features/docker-in-docker:1": { "version": "latest", "enableBuildx": true, "moby": true }, "ghcr.io/devcontainers/features/sshd:1": { "version": "latest" }, "ghcr.io/devcontainers/features/package-manager:1": { "enableApt": true, "version": "latest" } }
 }
